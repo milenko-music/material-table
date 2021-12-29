@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import Checkbox from "@material-ui/core/Checkbox";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 import IconButton from "@material-ui/core/IconButton";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Menu from "@material-ui/core/Menu";
@@ -13,15 +12,14 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import { lighten } from "@material-ui/core/styles/colorManipulator";
 import classNames from "classnames";
 import { CsvBuilder } from "filefy";
-import PropTypes, { oneOf } from "prop-types";
-import "jspdf-autotable";
-import * as React from "react";
-const jsPDF = typeof window !== "undefined" ? require("jspdf").jsPDF : null;
+import PropTypes from "prop-types";
+import React from "react";
 /* eslint-enable no-unused-vars */
 
 export class MTableToolbar extends React.Component {
   constructor(props) {
     super(props);
+    this.jsPDF = null;
     this.state = {
       columnsButtonAnchorEl: null,
       exportButtonAnchorEl: null,
@@ -74,28 +72,34 @@ export class MTableToolbar extends React.Component {
       .exportFile();
   };
 
-  defaultExportPdf = () => {
-    if (jsPDF !== null) {
-      const [columns, data] = this.getTableData();
-
-      let content = {
-        startY: 50,
-        head: [columns.map((columnDef) => columnDef.title)],
-        body: data,
-      };
-
-      const unit = "pt";
-      const size = "A4";
-      const orientation = "landscape";
-
-      const doc = new jsPDF(orientation, unit, size);
-      doc.setFontSize(15);
-      doc.text(this.props.exportFileName || this.props.title, 40, 40);
-      doc.autoTable(content);
-      doc.save(
-        (this.props.exportFileName || this.props.title || "data") + ".pdf"
-      );
+  defaultExportPdf = async () => {
+    // if (typeof window === "undefined") {
+    //   return
+    // }
+    if (this.jsPDF === null) {
+      await import("jspdf-autotable");
+      const jsPDFImport = await import("jspdf");
+      this.jsPDF = jsPDFImport.jsPDF;
     }
+    const [columns, data] = this.getTableData();
+
+    let content = {
+      startY: 50,
+      head: [columns.map((columnDef) => columnDef.title)],
+      body: data,
+    };
+
+    const unit = "pt";
+    const size = "A4";
+    const orientation = "landscape";
+
+    const doc = new this.jsPDF(orientation, unit, size);
+    doc.setFontSize(15);
+    doc.text(this.props.exportFileName || this.props.title, 40, 40);
+    doc.autoTable(content);
+    doc.save(
+      (this.props.exportFileName || this.props.title || "data") + ".pdf"
+    );
   };
 
   exportCsv = () => {
