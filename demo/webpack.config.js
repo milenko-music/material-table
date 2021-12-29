@@ -2,6 +2,7 @@ const webpack = require("webpack");
 
 module.exports = {
   entry: ["babel-polyfill", "./demo/demo.js"],
+  devtool: "source-map",
   module: {
     rules: [
       {

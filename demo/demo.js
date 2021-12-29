@@ -510,6 +510,7 @@ class App extends Component {
                       color: "primary",
                     },
                     selection: false,
+                    exportButton: true,
                     selectionProps: (rowData) => {
                       rowData.tableData.disabled = rowData.name === "A1";
 
